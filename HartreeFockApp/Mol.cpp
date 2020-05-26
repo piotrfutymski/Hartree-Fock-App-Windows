@@ -12,12 +12,24 @@ Mol::Mol(const std::vector<Nucleon>& n)
 
 }
 
-Mol::Mol():Mol(1)
+Mol::Mol()
 {
 }
 
 Mol::Mol(int charge):Mol({ {Position{0,0,0}, charge } })
 {
+}
+
+void Mol::addNucleon(const Nucleon& n)
+{
+	_nucleons.push_back(n);
+	_MOcount = 0;
+	for (int i = 0; i < _nucleons.size(); i++)
+	{
+		_MOcount += _nucleons[i].charge;
+	}
+	_MOcount = (_MOcount + 1) / 2;
+	setMOcount(_MOcount);
 }
 
 void Mol::moveNucleon(int n, const Position& delta)
@@ -97,7 +109,6 @@ void Mol::HF_TO_Divergance(double delta)
 		oldE = newE;
 		newE = this->getElectronicEnergy();
 		i++;
-		std::cout << this->getMoleculeEnergy() << std::endl;
 		if (i > 300)
 			break;
 

@@ -14,6 +14,8 @@ public:
 	Mol();
 	Mol(int charge);
 
+
+	void addNucleon(const Nucleon& n);
 	void moveNucleon(int n, const Position& delta);
 	void setMOcount(int c);
 

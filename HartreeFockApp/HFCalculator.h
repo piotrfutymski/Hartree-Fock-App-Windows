@@ -1,17 +1,18 @@
 #pragma once
-#include "BasisSet.h"
+#include "Mol.h"
+#include <string>
 
 class HFCalculator
 {
 public:
 
-	void init();
-
-	BasisSet& getSet();
+	static void run();
+	static std::string nucleonsNames[10];
+	static double bohrAngstrom;
 
 private:
 
-	BasisSet _bset;
+	static int atomFromConsole();
 
 
 };
