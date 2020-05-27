@@ -92,7 +92,6 @@ void Mol::HFProcedure(int n)
 		this->recalculateF();
 		EigenSolver::solve(_FMatrix, _SMatrix, _orbitalCoeficients[0]);
 
-
 		//this->PullyMixing(std::min(n,5));
 		this->recalculateEnergy();
 
@@ -112,7 +111,8 @@ void Mol::HF_TO_Divergance(double delta)
 		if (i > 300)
 			break;
 
-	} while (abs(oldE - newE) > delta || i < 10);
+	} while (hardDivergance(delta));
+
 }
 
 void Mol::HF_TO_ElapsedTime(double t)
@@ -304,6 +304,19 @@ void Mol::PullyMixing(int n)
 		for (int j = 0; j < _orbitalCoeficients[0].n_rows; j++)
 			_orbitalCoeficients[0](j, i) /= l;
 	}
+}
+
+bool Mol::hardDivergance(double d)
+{
+	for (int i = 0; i < _orbitalCoeficients[0].n_rows; i++)
+	{
+		for (int j = 0; j < _orbitalCoeficients[0].n_cols; j++)
+		{
+			if (abs(_orbitalCoeficients[0](i, j) - _orbitalCoeficients[1](i, j)) > d)
+				return true;
+		}
+	}
+	return false;
 }
 
 

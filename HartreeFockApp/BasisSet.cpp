@@ -32,57 +32,60 @@ void BasisSet::createTestBasisSet(const std::vector<Nucleon>& nucleons, double b
 	for (int i = 0; i < nucleons.size(); i++)
 	{
 		auto date = this->loadAOs(_nucleons[i].charge);
-		double tab[] = { 26.53213100 ,  6.101755010 ,  1.696271530, 0.4458187000 };
+		//if (nucleons[i].charge == 8)
+		{
+			double tab[] = { 4.72797,  1.19034 ,  0.359412, 0.126751 };
 
-		double c = sqrt(1 / (2 - 2 * exp(-s)));
-		date.push_back({
-			{s * tab[0], c , {1/sqrt(2*tab[0]),0,0}},
-			{s * tab[0], -c, {-1 / sqrt(2 * tab[0]),0,0}}
-			});
-		date.push_back({
-			{s * tab[1], c , {1 / sqrt(2 * tab[1]),0,0}},
-			{s * tab[1], -c, {-1 / sqrt(2 * tab[1]),0,0}}
-			});
-		date.push_back({
-			{s * tab[2], c , {1 / sqrt(2 * tab[2]),0,0}},
-			{s * tab[2], -c, {-1 / sqrt(2 * tab[2]),0,0}}
-			});
-		date.push_back({
-			{s * tab[3], c , {1 / sqrt(2 * tab[3]),0,0}},
-			{s * tab[3], -c, {-1 / sqrt(2 * tab[3]),0,0}}
-			});
-		date.push_back({
-			{s * tab[0], c , {0,1 / sqrt(2 * tab[0]),0}},
-			{s * tab[0], -c, {0,-1 / sqrt(2 * tab[0]),0}}
-			});
-		date.push_back({
-			{s * tab[1], c , {0,1 / sqrt(2 * tab[1]),0}},
-			{s * tab[1], -c, {0,-1 / sqrt(2 * tab[1]),0}}
-			});
-		date.push_back({
-			{s * tab[2], c , {0,1 / sqrt(2 * tab[2]),0}},
-			{s * tab[2], -c, {0,-1 / sqrt(2 * tab[2]),0}}
-			});
-		date.push_back({
-			{s * tab[3], c , {0,1 / sqrt(2 * tab[3]),0}},
-			{s * tab[3], -c, {0,-1 / sqrt(2 * tab[3]),0}}
-			});
-		date.push_back({
-			{s * tab[0], c , {0,0,1 / sqrt(2 * tab[0])}},
-			{s * tab[0], -c, {0,0,-1 / sqrt(2 * tab[0])}}
-			});
-		date.push_back({
-			{s * tab[1], c , {0,0,1 / sqrt(2 * tab[1])}},
-			{s * tab[1], -c, {0,0,-1 / sqrt(2 * tab[1])}}
-			});
-		date.push_back({
-			{s * tab[2], c , {0,0,1 / sqrt(2 * tab[2])}},
-			{s * tab[2], -c, {0,0,-1 / sqrt(2 * tab[2])}}
-			});
-		date.push_back({
-			{s * tab[3], c , {0,0,1 / sqrt(2 * tab[3])}},
-			{s * tab[3], -c, {0,0,-1 / sqrt(2 * tab[3])}}
-			});
+			double c = sqrt(1 / (2 - 2 * exp(-s*b*b)));
+			date.push_back({
+				{s * tab[0], c , {b / sqrt(2 * tab[0]),0,0}},
+				{s * tab[0], -c, {-b / sqrt(2 * tab[0]),0,0}}
+				});
+			date.push_back({
+				{s * tab[1], c , {b / sqrt(2 * tab[1]),0,0}},
+				{s * tab[1], -c, {-b / sqrt(2 * tab[1]),0,0}}
+				});
+			date.push_back({
+				{s * tab[2], c , {b / sqrt(2 * tab[2]),0,0}},
+				{s * tab[2], -c, {-b / sqrt(2 * tab[2]),0,0}}
+				});
+			date.push_back({
+				{s * tab[3], c , {b / sqrt(2 * tab[3]),0,0}},
+				{s * tab[3], -c, {-b / sqrt(2 * tab[3]),0,0}}
+				});
+			date.push_back({
+				{s * tab[0], c , {0,b / sqrt(2 * tab[0]),0}},
+				{s * tab[0], -c, {0,-b / sqrt(2 * tab[0]),0}}
+				});
+			date.push_back({
+				{s * tab[1], c , {0,b / sqrt(2 * tab[1]),0}},
+				{s * tab[1], -c, {0,-b / sqrt(2 * tab[1]),0}}
+				});
+			date.push_back({
+				{s * tab[2], c , {0,b / sqrt(2 * tab[2]),0}},
+				{s * tab[2], -c, {0,-b / sqrt(2 * tab[2]),0}}
+				});
+			date.push_back({
+				{s * tab[3], c , {0,b / sqrt(2 * tab[3]),0}},
+				{s * tab[3], -c, {0,-b / sqrt(2 * tab[3]),0}}
+				});
+			date.push_back({
+				{s * tab[0], c , {0,0,b / sqrt(2 * tab[0])}},
+				{s * tab[0], -c, {0,0,-b / sqrt(2 * tab[0])}}
+				});
+			date.push_back({
+				{s * tab[1], c , {0,0,b / sqrt(2 * tab[1])}},
+				{s * tab[1], -c, {0,0,-b / sqrt(2 * tab[1])}}
+				});
+			date.push_back({
+				{s * tab[2], c , {0,0,b / sqrt(2 * tab[2])}},
+				{s * tab[2], -c, {0,0,-b / sqrt(2 * tab[2])}}
+				});
+			date.push_back({
+				{s * tab[3], c , {0,0,b / sqrt(2 * tab[3])}},
+				{s * tab[3], -c, {0,0,-b / sqrt(2 * tab[3])}}
+				});
+		}	
 		for (int j = 0; j < date.size(); j++)
 		{
 			_basisFucntion.push_back({});

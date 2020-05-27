@@ -59,5 +59,6 @@ private:
 	arma::vec getCoeficientIntegrals(const arma::mat& left, const arma::mat& right);
 
 	void PullyMixing(int n);
+	bool hardDivergance(double);
 
 };
