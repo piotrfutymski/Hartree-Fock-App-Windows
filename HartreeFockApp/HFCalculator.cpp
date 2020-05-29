@@ -51,9 +51,10 @@ void HFCalculator::run()
 		std::cout << "Calculating integrals..." << std::endl;
 		molecule.calculateIntegrals();
 		std::cout << "HF Self Consistent Procedure..." << std::endl;
-		molecule.HF_TO_Divergance(0.001);
+		molecule.HF_TO_Divergance(0.00001);
 		std::cout << "And here we have the result" << std::endl;
 		std::cout << "Molecule energy is equal: " << molecule.getMoleculeEnergy() << std::endl;
+		molecule.saveMolecularFunctionPlane("out", 3.0, 3.0, 0.01);
 		std::cout << "--------------------------------------------------------" << std::endl;
 		std::cout << "Once again? 1-yes/0-no" << std::endl;
 		std::cin >> x;

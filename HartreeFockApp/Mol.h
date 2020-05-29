@@ -33,6 +33,7 @@ public:
 	std::vector<double> getMolecularCoeficents(int m);
 	double countMolecularFunction(int m, const Position & p);
 	double countMolecularFunction(int m, double x);
+	void saveMolecularFunctionPlane(const std::string& filename, double yMax, double xMax, double delta);
 
 private:
 
@@ -45,8 +46,10 @@ private:
 	arma::mat _FMatrix;
 	arma::mat _SMatrix;
 	arma::mat _PMatrix;
+	arma::mat _oldPMatrix;
 
-	arma::mat _orbitalCoeficients[5];
+
+	arma::mat _orbitalCoeficients;
 
 	double _electronicEnergy;
 
@@ -58,7 +61,7 @@ private:
 
 	arma::vec getCoeficientIntegrals(const arma::mat& left, const arma::mat& right);
 
-	void PullyMixing(int n);
+
 	bool hardDivergance(double);
 
 };

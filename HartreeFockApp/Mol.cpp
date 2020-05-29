@@ -42,12 +42,12 @@ void Mol::moveNucleon(int n, const Position& delta)
 void Mol::setMOcount(int c)
 {
 	_MOcount = c;
-	_orbitalCoeficients[0].resize(_basisSet.getSize(), c);
+	_orbitalCoeficients.resize(_basisSet.getSize(), c);
 	for (int i = 0; i < c; i++)
 	{
 		for (int j = 0; j < _basisSet.getSize(); j++)
 		{
-			_orbitalCoeficients[0](j, i) = 0.0;
+			_orbitalCoeficients(j, i) = 0.0;
 		}
 	}
 }
@@ -84,15 +84,10 @@ void Mol::HFProcedure(int n)
 {
 	if (_integralsCalculated)
 	{
-		for (int i = 4; i > 0; i--)
-		{
-			_orbitalCoeficients[i] = _orbitalCoeficients[i - 1];
-		}
+		_oldPMatrix = _PMatrix;
+		EigenSolver::solve(_FMatrix, _SMatrix, _orbitalCoeficients);
 		this->recalculateP();
 		this->recalculateF();
-		EigenSolver::solve(_FMatrix, _SMatrix, _orbitalCoeficients[0]);
-
-		//this->PullyMixing(std::min(n,5));
 		this->recalculateEnergy();
 
 	}
@@ -108,10 +103,14 @@ void Mol::HF_TO_Divergance(double delta)
 		oldE = newE;
 		newE = this->getElectronicEnergy();
 		i++;
-		if (i > 300)
+		if (i > 150)
+		{
+			std::cout << "Energy doesn't converge" << std::endl;
 			break;
+		}
+			
 
-	} while (hardDivergance(delta));
+	} while (abs(oldE-newE) > delta);
 
 }
 
@@ -145,7 +144,7 @@ std::vector<double> Mol::getMolecularCoeficents(int m)
 
 	for (int i = 0; i < _basisSet.getSize(); i++)
 	{
-		res[i] = _orbitalCoeficients[0](i,m);
+		res[i] = _orbitalCoeficients(i,m);
 	}
 	return res;
 }
@@ -155,7 +154,7 @@ double Mol::countMolecularFunction(int m, const Position & p)
 	double res = 0.0;
 	for (int i = 0; i < _basisSet.getSize(); i++)
 	{
-		res += _basisSet.getFunctionValue(i, p) * _orbitalCoeficients[0](i, m);
+		res += _basisSet.getFunctionValue(i, p) * _orbitalCoeficients(i, m);
 	}
 	return res;
 }
@@ -163,6 +162,32 @@ double Mol::countMolecularFunction(int m, const Position & p)
 double Mol::countMolecularFunction(int m, double x)
 {
 	return this->countMolecularFunction(m, Position{ x,0.0,0.0 });
+}
+
+void Mol::saveMolecularFunctionPlane(const std::string& filename, double yMax, double zMax, double delta)
+{
+	for (int i = 0; i < _orbitalCoeficients.n_cols; i++)
+	{
+		std::fstream file("data/" + filename +"_"+ std::to_string(i) + ".txt", std::ios::trunc | std::ios::out);
+		if (!file.is_open())
+			throw std::exception("Mol::saveMolecularFunctionPlane couldn't create file");
+
+		double z = -zMax;
+		while (z <= zMax)
+		{
+			double y = -yMax;
+			while (y <= yMax)
+			{
+				auto v = this->countMolecularFunction(i, { 0.0,y,z });
+				file << v <<"\n";
+
+				y += delta;
+			}
+			z += delta;
+		}
+
+		file.close();
+	}
 }
 
 void Mol::recalculateP()
@@ -174,12 +199,15 @@ void Mol::recalculateP()
 			double s = 0.0;
 			for (int k = 0; k < _MOcount; k++)
 			{
-				s += _orbitalCoeficients[0](i, k) * _orbitalCoeficients[0](j, k);
+				s += _orbitalCoeficients(i, k) * _orbitalCoeficients(j, k);
 			}
 			_PMatrix(i, j) =  2 * s;
+			_PMatrix(i, j) = _PMatrix(i, j) * 0.5 + _oldPMatrix(i, j) * 0.5;
 			_PMatrix(j, i) = _PMatrix(i, j);
+
 		}
 	}
+
 }
 
 void Mol::recalculateF()
@@ -233,86 +261,14 @@ arma::vec Mol::getCoeficientIntegrals(const arma::mat& left, const arma::mat& ri
 	return res;
 }
 
-void Mol::PullyMixing(int n)
-{
-	if (n == 0)
-		return;
-	std::vector<arma::mat> B(_orbitalCoeficients[0].n_cols);
-	std::vector<arma::vec> X(_orbitalCoeficients[0].n_cols);
-	arma::vec L(n);
-	for (int i = 0; i < n-1; i++)
-	{
-		L(i) = 0;
-	}
-	L(n - 1) = -1;
-		
-	for (size_t i = 0; i <_orbitalCoeficients[0].n_cols; i++)
-	{
-		B[i] = arma::mat(n, n);
-		X[i] = arma::vec(n);
-	}
-
-	for (int i = 0; i < n-1; i++)
-	{
-		for (int j = 0; j < n-1; j++)
-		{
-			auto vec = this->getCoeficientIntegrals(_orbitalCoeficients[i] - _orbitalCoeficients[i + 1], _orbitalCoeficients[j] - _orbitalCoeficients[j + 1]);
-			for (size_t k = 0; k < _orbitalCoeficients[0].n_cols; k++)
-			{
-				B[k](i, j) = vec[k];
-			}
-		}
-	}
-	for (int i = 0; i < n; i++)
-	{
-		for (int j = 0; j < B.size(); j++)
-		{
-			B[j](i, n-1) = -1;
-			B[j](n-1, i) = -1;
-			B[j](n-1, n-1) = 0;
-		}		
-	}
-	for (int i = 0; i < B.size(); i++)
-	{
-		X[i] = arma::solve(B[i], L);
-	}
-
-	for (int i = 0; i < _orbitalCoeficients[0].n_cols; i++)
-	{
-		for (int j = 0; j < _orbitalCoeficients[0].n_rows; j++)
-		{
-
-			_orbitalCoeficients[0](j, i) /=2;
-			for (int k = 0; k < n-1; k++)
-			{
-				_orbitalCoeficients[0](j, i) += 0.5 * X[i](k) * _orbitalCoeficients[k + 1](j, i);
-			}
-		}
-	}
-
-	for (int i = 0; i < _orbitalCoeficients[0].n_cols; i++)
-	{
-		double res = 0.0;
-		for (int j = 0; j < _orbitalCoeficients[0].n_rows; j++)
-		{
-			for (int k = 0; k < _orbitalCoeficients[0].n_rows; k++)
-			{
-				res += _orbitalCoeficients[0](j, i) * _orbitalCoeficients[0](k, i) * _SMatrix(k, j);
-			}
-		}
-		double l = sqrt(res);
-		for (int j = 0; j < _orbitalCoeficients[0].n_rows; j++)
-			_orbitalCoeficients[0](j, i) /= l;
-	}
-}
 
 bool Mol::hardDivergance(double d)
 {
-	for (int i = 0; i < _orbitalCoeficients[0].n_rows; i++)
+	for (int i = 0; i < _orbitalCoeficients.n_rows; i++)
 	{
-		for (int j = 0; j < _orbitalCoeficients[0].n_cols; j++)
+		for (int j = 0; j < _orbitalCoeficients.n_cols; j++)
 		{
-			if (abs(_orbitalCoeficients[0](i, j) - _orbitalCoeficients[1](i, j)) > d)
+			if (abs(_orbitalCoeficients(i, j) - _orbitalCoeficients(i, j)) > d)
 				return true;
 		}
 	}
